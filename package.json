@@ -2,9 +2,13 @@
 {
     "name": "node-api-template",
     "main": "server.js",
+    "license": "Apache-2.0",
+    "repository": "https://github.com/aalex/restapi",
     "dependencies": {
         "express": "~4.0.0",
         "mongoose": "~3.6.13",
-        "body-parser": "~1.0.1"
+        "body-parser": "~1.0.1",
+        "morgan": "1.8.2",
+        "jsonwebtoken": "7.4.1"
     }
 }
