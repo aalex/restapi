@@ -8,10 +8,10 @@
  */
 
 // call the packages we need
-var express = require('express');        // call express
-var app = express();                 // define our app using express
+var express = require('express'); // call express
+var app = express(); // define our app using express
 var bodyParser = require('body-parser');
-//var morgan      = require('morgan');
+//var morgan = require('morgan');
 var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var config = require('./config'); // get our config file
 var User = require('./app/models/user'); // get our mongoose model
@@ -22,10 +22,11 @@ var User = require('./app/models/user'); // get our mongoose model
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-var port = config.port;    // set our port
+var port = config.port; // set our port
 var mongoose = require('mongoose');
 mongoose.connect(config.database); // database
 app.set('superSecret', config.secret); // secret variable
+
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'Database connection error:'));
 db.once('open', function callback () {
@@ -59,6 +60,7 @@ router.post('/setup', function(req, res) {
 });
 
 router.post('/authenticate', function(req, res) {
+    console.log(req.body);
     // find the user
     User.findOne({
         name: req.body.name
@@ -67,11 +69,17 @@ router.post('/authenticate', function(req, res) {
             throw err;
         }
         if (! user) {
-            res.json({ success: false, message: 'Authentication failed. User not found.' });
+            res.json({
+                success: false,
+                message: 'Authentication failed. User not found. ' + req.body.name
+            });
         } else if (user) {
             // check if password matches
             if (user.password != req.body.password) {
-                res.json({ success: false, message: 'Authentication failed. Wrong password.' });
+                res.json({
+                    success: false,
+                    message: 'Authentication failed. Wrong password.'
+                });
             } else {
                 // if user is found and password is right
                 // create a token
@@ -97,14 +105,14 @@ router.use(function(req, res, next) {
     // decode token
     if (token) {
         // verifies secret and checks exp
-        jwt.verify(token, app.get('superSecret'), function(err, decoded) {      
+        jwt.verify(token, app.get('superSecret'), function(err, decoded) {
             if (err) {
                 return res.json({
                     success: false, message: 'Failed to authenticate token.'
                 });    
             } else {
                 // if everything is good, save to request for use in other routes
-                req.decoded = decoded;    
+                req.decoded = decoded;
                 next();
             }
         });
@@ -120,7 +128,9 @@ router.use(function(req, res, next) {
 
 //test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
-    res.json({ message: 'hooray! welcome to our api!' });   
+    res.json({
+        message: 'hooray! welcome to our api!'
+    });
 });
 
 //get all the users (accessed at GET http://localhost:8080/api/users)
@@ -150,15 +160,17 @@ router.route('/users/:users_id').put(function(req, res) {
             res.send(err);
         }
 
-        user.name = req.body.name;  // update the user name
-        user.password = req.body.password;  // update the user password
-        user.admin = req.body.admin;  // update the user admin
+        user.name = req.body.name; // update the user name
+        user.password = req.body.password; // update the user password
+        user.admin = req.body.admin; // update the user admin
         // save the bear
         user.save(function(err) {
             if (err) {
                 res.send(err);
             }
-            res.json({ success:true , message: 'User updated!' });
+            res.json({
+                success: true,
+                message: 'User updated!' });
         });
     });
 });
@@ -171,7 +183,8 @@ router.route('/users/:users_id').delete(function(req, res) {
             res.send(err);
         }
         res.json({
-            success:true, message: 'User: '+ user+' Successfully deleted'
+            success: true,
+            message: 'User: ' + user + ' Successfully deleted'
         });
     });
 });
